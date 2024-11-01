@@ -1,0 +1,42 @@
+import base
+
+fn main()
+{
+    print("pepega");
+    input("inputpepega");
+    input();
+
+    int pepega = 10;
+    if (pepega > 10)
+    {
+        print("zalupa");
+    }
+    elif(pepega > 10 or pepega < 10 and pepega > 12) print();
+    else print("jdasl");
+
+    loop(int i = 0; i < 10; i++)
+    {
+        // что нет тела
+    }
+
+    loop(true)
+    {
+        print("asdsd");
+        continue;
+    }
+    loop(char i in puga)
+
+    do loop(true)
+    {
+        print("zalipa");
+        break;
+    }
+
+    switch("k")
+    {
+        case "k": print("1"); break;
+        default: print("asdsaas"); return;
+    }
+    return 10;
+
+}
