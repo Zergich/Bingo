@@ -47,15 +47,7 @@ namespace Bingo
         {
             //if (str.ToCharArray()[str.Length - 1] != ';') err.Thesemicolonismissing(str, PosLine);
             string[] str = fullcode.Split('\n');
-            char[] linechar = new char[] { };
-            for (int i = 0; i < str.Length; i++)
-            {
-                if (str[i] == "{\r") countotkr++;
-                    if (str[i] == "}\r") countzakr++;
-                    //Console.WriteLine(countotkr + " " + countzakr);
-                    if (countotkr-2 == countzakr) { err.IfNotFigSkobk(str[i], i); Console.WriteLine("asd"); Environment.Exit(1); }
-            }
-      
+
 
             for (int i = 0; i < str.Length; i++)
             {
@@ -172,6 +164,7 @@ namespace Bingo
                     case "continue": token.Add(new Token("Continue", null, "none", PosLine)); break;
                     case "break": token.Add(new Token("Break", null, "none", PosLine)); break;
                     case "class": token.Add(new Token("class", GetCommand[i + 1], "none", PosLine)); break;
+                    case "lable": token.Add(new Token("Label_Goto", GetCommand[i+1], "none", PosLine)); break;
 
                     case "fn": break;
 
@@ -221,7 +214,7 @@ namespace Bingo
 
                     case "asm": NotFigur(); ASMBlock = true; HaveCommandWord = true; break;
 
-                    case "goto": break;
+                    case "goto": HaveCommandWord = true; Goto(GetCommandArgs, PosLine, vlogenie); break;
 
                     case "": break;
 
@@ -241,16 +234,27 @@ namespace Bingo
                 bool regexfalse = true;
                 bool arrayfalseinline = true; //if() {
                 bool arrayfaulenextline = true; // if()
-                                                 //{
+                                                //{
+
+
+                bool UslNextSkobk = Fullstr[PosLine - 1].Trim(' ').ToCharArray()[Fullstr[PosLine - 1].ToCharArray().Length - 2] == ')'; //if() скобка на следуйщей строке
+                                                                                                                                        //{
+
+                //Console.WriteLine(Fullstr[PosLine - 1].Trim(' ').ToCharArray()[Fullstr[PosLine - 1].ToCharArray().Length - 3]);        
+                //Console.WriteLine(linechar[linechar.Length - 3]);
+                //Console.WriteLine(linechar[linechar.Length - 1]);
 
                 if (matches.Count == 0) regexfalse = false;
                 try
-                {// ошибка в индексах
-                    if (Fullstr[PosLine -1 ].Trim(' ').ToCharArray()[Fullstr[PosLine - 1].ToCharArray().Length - 2] != ')' && Fullstr[PosLine + 1] != "{\r") arrayfaulenextline = false;
-                    if (str.ToCharArray()[0] != '{' && linechar[linechar.Length - 2] != ')') arrayfalseinline = false;
+                {// ошибка в индексах                                                                               // так надо смысл в индексе 3
+                    if ((UslNextSkobk || Fullstr[PosLine - 1].Trim(' ').ToCharArray()[Fullstr[PosLine - 1].ToCharArray().Length - 3] == ')') && Fullstr[PosLine] == "{\r") { } else arrayfaulenextline = false;
+                    if (linechar[linechar.Length - 3] == ')' && linechar[linechar.Length - 1] == '{') { } else arrayfalseinline = false;
                 }
                 catch(IndexOutOfRangeException) { }
-                if(!regexfalse && !arrayfalseinline && !arrayfaulenextline) { err.IfNotFigSkobk(str, PosLine); Environment.Exit(1); }    
+                Regex if1line = new Regex(@"(.*)\n {4}|\t(.*)|(.*) (.*)\n|(.*) (.*)"); // if с однострочным телом
+                MatchCollection ifmatch = if1line.Matches(str);
+
+                if (!regexfalse && !arrayfalseinline && !arrayfaulenextline && (ifmatch.Count > 1 || ifmatch.Count == 0)) { err.IfNotFigSkobk(str, PosLine); Environment.Exit(1); }
             }
         }
         static void Branches(string str, int Posline, string Fullstr, string IF, string vlogenie)
@@ -588,6 +592,7 @@ namespace Bingo
         }
         public static void Shell(string[] MsgToPanic, int Posline, string vlogenie) => token.Add(new Token("SHELL", MsgToPanic[1], vlogenie, Posline));
 
+        public static void Goto(string[] MsgToPanic, int Posline, string vlogenie) => token.Add(new Token("Goto", MsgToPanic[1], vlogenie, Posline));
 
         public static void Print(string[] str, int Position, string vlogenie)
         {
@@ -597,7 +602,6 @@ namespace Bingo
 
             string returnstring = "";
             bool Fstr = false;
-            bool Autoecran = false;
 
             string varnamefstr = "";
             bool wrirtefstr = false;
@@ -614,7 +618,7 @@ namespace Bingo
 
 
             if (getchars[0] == '$') { Fstr = true; goto recognize; }
-            else if (getchars[0] == '@') { Autoecran = true; goto recognize; }
+            else if (getchars[0] == '@') { goto recognize; }
             if (getchars[0] != '"') { err.DontWount(str[1], Position); return; }
 
         recognize:
@@ -670,7 +674,6 @@ namespace Bingo
 
             returnstring = "";
             Fstr = false;
-            Autoecran = false;
             HaveCommandWord = false;
 
         }

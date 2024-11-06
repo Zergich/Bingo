@@ -1,22 +1,24 @@
 
 
-
-if(1 > 2)
-
+if(1 > 2) {
 	loop(int i = 0 i < 10 i++)
 		print("a")
 	loop(i = 0 i < 10 i++)
 		print("a")
 }
-if(true)
 
+if(true) 
+{
 	print()
-
+}
 elif("pwpw" == "asde")
-
+{
 	printl("else")
 	loop(int h = 0 pepega < 10 pepega++)
+}
+if(43 > 32) {primt("epepeasdf")}
 
-if(43 > 32) {primt("epepeasdf")
+if(453 > 324) primt("epepeasdf")
+
 
 

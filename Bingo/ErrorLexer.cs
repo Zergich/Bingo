@@ -184,7 +184,7 @@ namespace Bingo
             Console.WriteLine("^");
             Console.CursorLeft = str.Split(' ')[0].Length / 2;
             Console.Write("└─");
-            Console.WriteLine("─ Отсутствуют фигурные скобки.");
+            Console.WriteLine("─ Отсутствуют фигурные скобки лиюо стоит впритык.");
 
             Console.WriteLine($"\n{RED}Error: IfNotFigSkobk{NORMAL}\n");
             return;

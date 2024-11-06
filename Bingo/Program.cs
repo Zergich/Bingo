@@ -28,7 +28,7 @@ namespace Bingo
 
             LexrTest.StartLexer(FileData); // сделать нумерацию без массивов в параметре str
 
-            Console.ReadKey();
+            //Console.ReadKey();
         }
     }
 }
