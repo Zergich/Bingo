@@ -46,13 +46,15 @@ namespace Bingo
         public static void StartLexer(string fullcode)
         {
             //if (str.ToCharArray()[str.Length - 1] != ';') err.Thesemicolonismissing(str, PosLine);
-            string[] str = fullcode.Split('\n');
+            string[] str = fullcode.Replace("\r", string.Empty).Trim().Split('\n');
 
 
             for (int i = 0; i < str.Length; i++)
             {
-                FindeVariables(str[i].Trim('\r'), i+1);
-                Command(str[i].Trim('\r'), i+1, "None", str);
+                if (str[i].ToCharArray()[0] == '/' && str[i].ToCharArray()[1] == '/') continue;
+                if (str[i] == "") continue;
+                FindeVariables(str[i].Trim('\r'), i + 1);
+                Command(str[i].Trim('\r'), i + 1, "None", str);
             }
             ReturnTokens();
         }
@@ -97,18 +99,28 @@ namespace Bingo
         public static void GetDataTypeVariable(string str, int pos, string type)
         {
             string[] splitforchek = str.Split(' ');
+            int needIndex = 0;
 
+            Regex regeex = new Regex("\\w*\\s[a-zA-Z_]+[a-zA-Z_0-9_]*\\s[=]");
+            MatchCollection matchees = regeex.Matches(str);
+            for (int i = 0; i < splitforchek.Length; i++)
+            {
+                if (matchees.Count > 0) { /*Console.WriteLine("pepega");*/ }
+                
+            }
+            foreach(var d in matchees) Console.WriteLine(d);
+            //Console.WriteLine(splitforchek[needIndex]);
             try
             {
                 switch (type)
                 {
-                    case "int_Variable": token.Add(new Token(type, Convert.ToString(int.Parse(splitforchek[3])), "var", pos)); splitforchek[3] = "removed"; HaveVariabel = false; break;
-                    case "string_Variable": token.Add(new Token(type, getstring(), "var", pos)); splitforchek[3] = "removed"; HaveVariabel = false; break;
-                    case "bool_Variable": token.Add(new Token(type, Convert.ToString(bool.Parse(splitforchek[3])), "var", pos)); splitforchek[3] = "removed"; HaveVariabel = false; break;
-                    case "float_Variable": token.Add(new Token(type, getfloat(), "var", pos)); splitforchek[3] = "removed"; HaveVariabel = false; break;
-                    case "byte_Variable": token.Add(new Token(type, Convert.ToString(byte.Parse(splitforchek[3])), "var", pos)); splitforchek[3] = "removed"; HaveVariabel = false; break;
-                    case "var_Variable": token.Add(new Token(type, splitforchek[3], "var", pos)); splitforchek[3] = "removed"; HaveVariabel = false; break;
-                    case "char_Variable": token.Add(new Token(type, Convert.ToString(char.Parse(splitforchek[3])), "var", pos)); splitforchek[3] = "removed"; HaveVariabel = false; break;
+                    case "int_Variable": token.Add(new Token(type, Convert.ToString(int.Parse(splitforchek[needIndex])), "var", pos)); splitforchek[needIndex] = "removed";  break;
+                    case "string_Variable": token.Add(new Token(type, getstring(), "var", pos)); splitforchek[needIndex] = "removed";  break;
+                    case "bool_Variable": token.Add(new Token(type, Convert.ToString(bool.Parse(splitforchek[needIndex])), "var", pos)); splitforchek[needIndex] = "removed"; break;
+                    case "float_Variable": token.Add(new Token(type, getfloat(), "var", pos)); splitforchek[needIndex] = "removed";  break;
+                    case "byte_Variable": token.Add(new Token(type, Convert.ToString(byte.Parse(splitforchek[needIndex])), "var", pos)); splitforchek[needIndex] = "removed"; /*HaveVariabel = false;*/ break;
+                    case "var_Variable": token.Add(new Token(type, splitforchek[needIndex], "var", pos)); splitforchek[needIndex] = "removed"; /*HaveVariabel = false;*/ break;
+                    case "char_Variable": token.Add(new Token(type, Convert.ToString(char.Parse(splitforchek[needIndex])), "var", pos)); splitforchek[needIndex] = "removed"; /*HaveVariabel = false;*/ break;
                 }
             }
             catch { err.VrongDataTipeVariable(str, pos); }
@@ -148,7 +160,6 @@ namespace Bingo
 
             string[] GetCommand = str.Split(' ');
 
-
             if (ASMBlock) ASM(str, PosLine);
 
 
@@ -168,6 +179,23 @@ namespace Bingo
 
                     case "fn": break;
 
+
+                    case "else": Branches(GetCommand[1], PosLine, str, "else", vlogenie); HaveCommandWord = true;
+                        str = "";
+                        for (int j = 1; j < GetCommand.Length; j++)
+                        {
+                            str += GetCommand[j]+" ";
+                        }
+                        char[] chars = str.ToCharArray();
+                        chars[0] = ' ';
+                        chars[chars.Length - 2] = ' ';
+
+                        str = new string(chars);
+                        break;
+                    case "asm": ASMBlock = true; HaveCommandWord = true; break;
+
+
+
                         //default: err.VrongNameComand(GetCommand[i], PosLine); wronggramar = true; Console.WriteLine("asdasdfasfdad"); return;
 
                 }
@@ -183,85 +211,151 @@ namespace Bingo
 
             for (int i = 0; i < GetCommandArgs.Length; i++)
             {
-                //Console.WriteLine(GetCommandArgs[i]);   
                 if (ASMBlock) break;
-                //Console.WriteLine(GetCommandArgs[i]);
-                //if (GetCommand[i] == "removed") continue;
-                switch (GetCommandArgs[i])
+                if (GetCommandArgs[i] == "") continue;
+
+                try
                 {
-                    case "try": NotFigur(); HaveCommandWord = true; break;//-
-                    case "catch": NotFigur(); HaveCommandWord = true; break;//-
+                    if (GetCommandArgs[i].ToCharArray()[1] == '{') //if(2 > 3) {print("asdasd") printl("asdasd453345345") print("asd")} для таких случаев чтоб удалять первую {
+                    {
+                        char[] deletFigSkobk = GetCommandArgs[i].ToCharArray();
+                        //Console.WriteLine(deletFigSkobk[1]);
+                        deletFigSkobk[1] = ' ';
+                        GetCommandArgs[i] = new string(deletFigSkobk);
+                    }
+                }
+                catch { }
+                //if (GetCommand[i] == "removed") continue;
+                //Console.WriteLine(GetCommandArgs[i].ToCharArray()[1]);
+                //Console.WriteLine(GetCommandArgs[i]);
+                switch (GetCommandArgs[i].Trim('\t').Trim())
+                {
+                    case "try": HaveCommandWord = true; break;//-
+                    case "catch": HaveCommandWord = true; break;//добавить что после закрывающей скобки обязательно должен идти катч и между ничего быть не может
                     case "panic": Panic(GetCommandArgs, PosLine, vlogenie); HaveCommandWord = true; break;
+
 
                     case "print":
                     case "input":
-                    case "printl": Print(GetCommandArgs, PosLine, vlogenie); HaveCommandWord = true; break;
+                    case "printl": printbuilding(str, false, GetCommandArgs[i]); Print(GetCommandArgs, PosLine, i, GetCommandArgs[i + 1]); HaveCommandWord = true; break;
 
 
-                    case "shell":  HaveCommandWord = true; Shell(GetCommandArgs, PosLine, vlogenie); break; // как system в C++ 
+                    case "shell": HaveCommandWord = true; Shell(GetCommandArgs, PosLine, vlogenie); break; // как system в C++ 
 
 
-                    case "switch": NotFigur(); HaveCommandWord = true; break;//-
+                    case "switch": HaveCommandWord = true; break;//-
 
-                    case "if": NotFigur(); Branches(GetCommandArgs[1], PosLine, str, "if", vlogenie); HaveCommandWord = true; break;
-                    case "elif": NotFigur(); Branches(GetCommandArgs[1], PosLine, str, "elif", vlogenie); HaveCommandWord = true; break;
-                    case "else": NotFigur(); Branches(GetCommandArgs[1], PosLine, str, "else", vlogenie); HaveCommandWord = true; break;
-
-
-                    case "dolp": NotFigur(); DoloopIn++; DoLoop(GetCommandArgs[1], PosLine, str, vlogenie); HaveCommandWord = true; break; // do loop
-                    case "loop": NotFigur(); Loop(GetCommandArgs[1], PosLine, str, vlogenie); HaveCommandWord = true; break;
+                    case "if": Branches(GetCommandArgs[1], PosLine, str, "if", vlogenie); HaveCommandWord = true; break;
+                    case "elif": /*NotFigur();*/  Branches(GetCommandArgs[1], PosLine, str, "elif", vlogenie); HaveCommandWord = true; break;
 
 
-                    case "asm": NotFigur(); ASMBlock = true; HaveCommandWord = true; break;
+                    case "dolp": DoloopIn++; DoLoop(GetCommandArgs[1], PosLine, str, vlogenie); HaveCommandWord = true; break; // do loop
+                    case "loop": Loop(GetCommandArgs[1], PosLine, str, vlogenie); HaveCommandWord = true; break;
 
                     case "goto": HaveCommandWord = true; Goto(GetCommandArgs, PosLine, vlogenie); break;
 
-                    case "": break;
-
-                    default: if (!HaveCommandWord) err.VrongNameComand(GetCommandArgs[0], PosLine); return;
+                    default: if (!HaveCommandWord && !HaveVariabel) err.VrongNameComand(GetCommandArgs[0], PosLine); break;
                 }
             } // HaveVariabel переменная всегда равна тру !!!!!!
+            HaveVariabel = false;
 
-
-            void NotFigur()
+            void printbuilding(string valuestring, bool tchk, string printl)// тчк точка с запаятой для однострочного if
             {
-                char[] linechar = str.Trim(' ').ToCharArray(); // posline -1 потому что в инициализации i+1 для понятного отображения строк  
-                bool jh = str.ToCharArray()[0] != '{' && linechar[linechar.Length - 2] != ')';
+                char[] ChekErrorPrint = new char[] { };
+                if (printl == "printl")
+                    ChekErrorPrint = valuestring.ToCharArray().Skip(6).ToArray();
+                else
+                    ChekErrorPrint = valuestring.ToCharArray().Skip(5).ToArray();
 
-                Regex regex = new Regex(@"{[^}]+\{?}*[^{]+\}");
-                MatchCollection matches = regex.Matches(str.Trim('\r'));
+                bool kavuchki = false;
+                int otkr = 0;
+                int zakr = 0;
+                if (!tchk) // print 
+                {
+                    for (int i = 0; i < ChekErrorPrint.Length; i++)
+                    {
+                        //Console.WriteLine(ChekErrorPrint[i]);
+                        if (i == ChekErrorPrint.Length - 2 && ChekErrorPrint[i] != '"') err.WrongParametrs(str, PosLine);
 
-                bool regexfalse = true;
-                bool arrayfalseinline = true; //if() {
-                bool arrayfaulenextline = true; // if()
-                                                //{
 
+                        if (ChekErrorPrint[i] == '"')
+                        {
+                            if (i != 0 && ChekErrorPrint[i - 1] == '\\' && ChekErrorPrint[i] == '"')
+                            {
+                                continue; // для \"
+                            }
+                        }
 
-                bool UslNextSkobk = Fullstr[PosLine - 1].Trim(' ').ToCharArray()[Fullstr[PosLine - 1].ToCharArray().Length - 2] == ')'; //if() скобка на следуйщей строке
-                                                                                                                                        //{
+                        if (ChekErrorPrint[i] == '"')
+                        {
+                            if (i != 0 && ChekErrorPrint[i - 1] != '\\' && ChekErrorPrint[i] == '"' && kavuchki)
+                                kavuchki = false;
+                        }
 
-                //Console.WriteLine(Fullstr[PosLine - 1].Trim(' ').ToCharArray()[Fullstr[PosLine - 1].ToCharArray().Length - 3]);        
-                //Console.WriteLine(linechar[linechar.Length - 3]);
-                //Console.WriteLine(linechar[linechar.Length - 1]);
+                        if (ChekErrorPrint[i] == '"' && !kavuchki && i == 1 || i == 2)
+                        {
+                            //Console.WriteLine(ChekErrorPrint[i - 1]);
+                            kavuchki = true;
+                            //if (ChekErrorPrint[i - 1] == '$') addliteral = "$";
+                            //else if (ChekErrorPrint[i - 1] == '@') addliteral = "@";
+                            //else if (ChekErrorPrint[i - 1] == '$' && ChekErrorPrint[i - 2] == '@') addliteral = "$@";
+                            //else if (ChekErrorPrint[i - 1] == '@' && ChekErrorPrint[i - 2] == '$') addliteral = "$@";
+                            //else if (ChekErrorPrint[i - 1] != '(') err.VrongliteralComand(str, PosLine);
+                        }
 
-                if (matches.Count == 0) regexfalse = false;
-                try
-                {// ошибка в индексах                                                                               // так надо смысл в индексе 3
-                    if ((UslNextSkobk || Fullstr[PosLine - 1].Trim(' ').ToCharArray()[Fullstr[PosLine - 1].ToCharArray().Length - 3] == ')') && Fullstr[PosLine] == "{\r") { } else arrayfaulenextline = false;
-                    if (linechar[linechar.Length - 3] == ')' && linechar[linechar.Length - 1] == '{') { } else arrayfalseinline = false;
+                        if (!kavuchki)
+                        {
+                            if (ChekErrorPrint[i] == '(') otkr++;
+                            if (ChekErrorPrint[i] == ')') zakr++;
+                        }
+                    }
                 }
-                catch(IndexOutOfRangeException) { }
-                Regex if1line = new Regex(@"(.*)\n {4}|\t(.*)|(.*) (.*)\n|(.*) (.*)"); // if с однострочным телом
-                MatchCollection ifmatch = if1line.Matches(str);
-
-                if (!regexfalse && !arrayfalseinline && !arrayfaulenextline && (ifmatch.Count > 1 || ifmatch.Count == 0)) { err.IfNotFigSkobk(str, PosLine); Environment.Exit(1); }
+                if (otkr != zakr)
+                {
+                    err.WrongParametrs(str, PosLine);
+                    Console.WriteLine($"{RED}Или выражение не в кавычках{NORMAL}");
+                }
             }
+            //void NotFigur()
+            //{
+            //    char[] linechar = str.Trim(' ').ToCharArray(); // posline -1 потому что в инициализации i+1 для понятного отображения строк  
+            //    bool jh = str.ToCharArray()[0] != '{' && linechar[linechar.Length - 2] != ')';
+
+            //    Regex regex = new Regex(@"{[^}]+\{?}*[^{]+\}");
+            //    MatchCollection matches = regex.Matches(str.Trim('\r'));
+
+            //    bool regexfalse = true;
+            //    bool arrayfalseinline = true; //if() {
+            //    bool arrayfaulenextline = true; // if()
+            //                                    //{
+
+
+            //    bool UslNextSkobk = Fullstr[PosLine - 1].Trim(' ').ToCharArray()[Fullstr[PosLine - 1].ToCharArray().Length - 2] == ')'; //if() скобка на следуйщей строке
+            //                                                                                                                            //{
+
+            //    //Console.WriteLine(Fullstr[PosLine - 1].Trim(' ').ToCharArray()[Fullstr[PosLine - 1].ToCharArray().Length - 3]);        
+            //    //Console.WriteLine(linechar[linechar.Length - 3]);
+            //    //Console.WriteLine(linechar[linechar.Length - 1]);
+
+            //    if (matches.Count == 0) regexfalse = false;
+            //    try
+            //    {// ошибка в индексах                                                                               // так надо смысл в индексе 3
+            //        if ((UslNextSkobk || Fullstr[PosLine - 1].Trim(' ').ToCharArray()[Fullstr[PosLine - 1].ToCharArray().Length - 3] == ')') && Fullstr[PosLine] == "{\r") { } else arrayfaulenextline = false;
+            //        if (linechar[linechar.Length - 3] == ')' && linechar[linechar.Length - 1] == '{') { } else arrayfalseinline = false;
+            //    }
+            //    catch (IndexOutOfRangeException) { }
+
+            //    if (!regexfalse && !arrayfalseinline && !arrayfaulenextline) { err.IfNotFigSkobk(str, PosLine); Environment.Exit(1); }
+
+            //    //Console.WriteLine($"{regexfalse} {arrayfalseinline} {arrayfaulenextline}");
+            //}
         }
         static void Branches(string str, int Posline, string Fullstr, string IF, string vlogenie)
         {
             string branch = "";
             if (IF == "if") branch = "IF";
             else if (IF == "elif") branch = "ELIF";
+            else if (IF == "else") branch = "ELSE";
 
             string[] line = str.Split(' ');
             string[] getfigurskobk = Fullstr.Split(' ');
@@ -277,69 +371,72 @@ namespace Bingo
 
             try
             {
-                bool ValidVar = false; // лексически правильный вид переменной
-                bool stringVarValidate = false; // чтоб не возникало ошибки у int Parse
-                for (int i = 1; i < OneArray.Length; i++) //!!!!!!!!!!!!!!!!!! возможна ошибка +1
-                {
-                    if (OneArray[i] == "true" || OneArray[i] == "false") { token.Add(new Token($"{branch}_True__or__False", OneArray[i], vlogenie, Posline)); continue; }
-                    if (OneArray[i] == "or" || OneArray[i] == "and") { token.Add(new Token($"{branch}_Or__or__AND", OneArray[i], vlogenie, Posline)); continue; }
-
-                    Regex regex = new Regex("^(_|)+[a-zA-Z_]+[a-zA-Z_0-9_]*");
-                    MatchCollection matches = regex.Matches(OneArray[i]);
-
-                    if (i % 4 == 1 && matches.Count == 0)
+                if (IF != "else")
+                { 
+                    bool ValidVar = false; // лексически правильный вид переменной
+                    bool stringVarValidate = false; // чтоб не возникало ошибки у int Parse
+                    for (int i = 1; i < OneArray.Length; i++) //!!!!!!!!!!!!!!!!!! возможна ошибка +1
                     {
-                        char[] chars = new char[] { };
-                        Array.Clear(chars, 0, chars.Length);
-                        chars = OneArray[i].ToCharArray();
+                        if (OneArray[i] == "true" || OneArray[i] == "false") { token.Add(new Token($"{branch}_True__or__False", OneArray[i], vlogenie, Posline)); continue; }
+                        if (OneArray[i] == "or" || OneArray[i] == "and") { token.Add(new Token($"{branch}_Or__or__AND", OneArray[i], vlogenie, Posline)); continue; }
 
-                        //foreach(char c in chars) Console.WriteLine(c);
-                        if ((chars[0] == '"' && chars[chars.Length - 1] == '"') || (chars[0] == '\'' && chars[chars.Length - 1] == '\'')) { ValidVar = true; stringVarValidate = true; }// проверка на строку
-                        if (!stringVarValidate)
-                        {
-                            try { int.Parse(OneArray[i]); ValidVar = true; }
-                            catch { err.VrongTipeVariable(Fullstr, Posline); return; }
-                            stringVarValidate = false;
-                        }
-                    }
+                        Regex regex = new Regex("^(_|)+[a-zA-Z_]+[a-zA-Z_0-9_]*");
+                        MatchCollection matches = regex.Matches(OneArray[i]);
 
-                    if (matches.Count == 0 && !ValidVar && i % 4 == 1) { err.VrongTipeVariable(Fullstr, Posline); return; }
-                    if (i % 4 == 1) token.Add(new Token($"{branch}_VAR", OneArray[i], vlogenie, Posline));
-                    else
-                    { // i % 4 и тд это позиции на которых стоят условия 
-                        if (i % 2 == 0)
+                        if (i % 4 == 1 && matches.Count == 0)
                         {
-                            switch (OneArray[i])
+                            char[] chars = new char[] { };
+                            Array.Clear(chars, 0, chars.Length);
+                            chars = OneArray[i].ToCharArray();
+
+                            //foreach(char c in chars) Console.WriteLine(c);
+                            if ((chars[0] == '"' && chars[chars.Length - 1] == '"') || (chars[0] == '\'' && chars[chars.Length - 1] == '\'')) { ValidVar = true; stringVarValidate = true; }// проверка на строку
+                            if (!stringVarValidate)
                             {
-                                case "<": token.Add(new Token($"{branch}_LogicOperation_<", "<", vlogenie, Posline)); break;
-                                case ">": token.Add(new Token($"{branch}_LogicOperation_>", ">", vlogenie, Posline)); break;
-                                case "==": token.Add(new Token($"{branch}_LogicOperation_==", "==", vlogenie, Posline)); break;
-                                case ">=": token.Add(new Token($"{branch}_LogicOperation_>=", ">=", vlogenie, Posline)); break;
-                                case "<=": token.Add(new Token($"{branch}_LogicOperation_<=", "<=", vlogenie, Posline)); break;
-                                case "!=": token.Add(new Token($"{branch}_LogicOperation_!=", "Poshel Nahui", vlogenie, Posline)); break;
-                                default: err.WrongBoolOperator(Fullstr, Posline); break;
+                                try { int.Parse(OneArray[i]); ValidVar = true; }
+                                catch { err.VrongTipeVariable(Fullstr, Posline); return; }
+                                stringVarValidate = false;
                             }
-                            token.Add(new Token($"{branch}_Value", OneArray[i + 1], vlogenie, Posline)); // остаток от 3 работает только до 11, по этому +1 в свиче
+                        }
+
+                        if (matches.Count == 0 && !ValidVar && i % 4 == 1) { err.VrongTipeVariable(Fullstr, Posline); return; }
+                        if (i % 4 == 1) token.Add(new Token($"{branch}_VAR", OneArray[i], vlogenie, Posline));
+                        else
+                        { // i % 4 и тд это позиции на которых стоят условия 
+                            if (i % 2 == 0)
+                            {
+                                switch (OneArray[i])
+                                {
+                                    case "<": token.Add(new Token($"{branch}_LogicOperation_<", "<", vlogenie, Posline)); break;
+                                    case ">": token.Add(new Token($"{branch}_LogicOperation_>", ">", vlogenie, Posline)); break;
+                                    case "==": token.Add(new Token($"{branch}_LogicOperation_==", "==", vlogenie, Posline)); break;
+                                    case ">=": token.Add(new Token($"{branch}_LogicOperation_>=", ">=", vlogenie, Posline)); break;
+                                    case "<=": token.Add(new Token($"{branch}_LogicOperation_<=", "<=", vlogenie, Posline)); break;
+                                    case "!=": token.Add(new Token($"{branch}_LogicOperation_!=", "Poshel Nahui", vlogenie, Posline)); break;
+                                    default: err.WrongBoolOperator(Fullstr, Posline); break;
+                                }
+                                token.Add(new Token($"{branch}_Value", OneArray[i + 1], vlogenie, Posline)); // остаток от 3 работает только до 11, по этому +1 в свиче
+
+                            }
 
                         }
 
                     }
+                    //foreach (var i in token) Console.WriteLine($"Value {i.Value}, Type {i.Type}, Line {i.Line}");
 
+                    //string[] GetCommandStartEnd = Fullstr.Split(new string[] { "{", "}" }, StringSplitOptions.None);
+                    //if (GetCommandStartEnd.Length <= 3) { }
+                    //else
+                    //{
+                    //    for (int i = 0; i < GetCommandStartEnd.Length; i++)
+                    //    {
+                    //        if (GetCommandStartEnd[i] == "\n") Posline++;
+                    //        FindeVariables(str, Posline);
+                    //        Command(str, Posline, $"{IF}_{IFIn}"); // идет дальше сканировать тело с пометкой о глубине и то в каком операторе находится
+                    //    }
+                    //}
                 }
-                //foreach (var i in token) Console.WriteLine($"Value {i.Value}, Type {i.Type}, Line {i.Line}");
-
-                //string[] GetCommandStartEnd = Fullstr.Split(new string[] { "{", "}" }, StringSplitOptions.None);
-                //if (GetCommandStartEnd.Length <= 3) { }
-                //else
-                //{
-                //    for (int i = 0; i < GetCommandStartEnd.Length; i++)
-                //    {
-                //        if (GetCommandStartEnd[i] == "\n") Posline++;
-                //        FindeVariables(str, Posline);
-                //        Command(str, Posline, $"{IF}_{IFIn}"); // идет дальше сканировать тело с пометкой о глубине и то в каком операторе находится
-                //    }
-                //}
-
+                else token.Add(new Token("ELSE", "Non", vlogenie, Posline));// и добавить тело 
             }
             catch { }
             HaveCommandWord = false;
@@ -588,17 +685,29 @@ namespace Bingo
         public static void Panic(string[] MsgToPanic, int Posline, string vlogenie)
         {
             token.Add(new Token("PANIC", MsgToPanic[1], vlogenie, Posline));
-            return;
         }
         public static void Shell(string[] MsgToPanic, int Posline, string vlogenie) => token.Add(new Token("SHELL", MsgToPanic[1], vlogenie, Posline));
 
         public static void Goto(string[] MsgToPanic, int Posline, string vlogenie) => token.Add(new Token("Goto", MsgToPanic[1], vlogenie, Posline));
 
-        public static void Print(string[] str, int Position, string vlogenie)
+        public static void Print(string[] str, int Position, int Index, string fuullstr) // index для имени токена в случиях if(2 > 3) {print("asdasd") printl("asdasd453345345") print("asd")}
         {
-            char[] getchars = str[1].ToCharArray();
             List<string> returntokens = new List<string>();
-            returntokens.Add(str[0]);
+            returntokens.Add(str[Index]);
+
+            char[] ChekErrorPrint = fuullstr.ToCharArray();
+            char[] getchars = str[1].ToCharArray();
+            int countkavychki = 0;
+            for (int i = 0; i < ChekErrorPrint.Length; i++)
+            {
+                //if (ChekErrorPrint[i] == '"' && !kavuchki) kavuchki = true;
+                //else if (ChekErrorPrint[i] == '"' && kavuchki) kavuchki = false;
+
+
+                if (ChekErrorPrint[i] == '"') if (i != 0 && ChekErrorPrint[i - 1] != '\\' && ChekErrorPrint[i] == '"') countkavychki++;// ошибка на начаое чтения
+                if (ChekErrorPrint[i] == '"' && i == 0)  countkavychki++;  // специально для начала чтения ВСЕ СЛУЖИТ ДЛЯ ПРОПУСКА ЭКРАНИРОВАННОЙ \"
+            }
+            if (countkavychki % 2 != 0 || countkavychki == 0) err.IfNotKavuchki(fuullstr, Position);
 
             string returnstring = "";
             bool Fstr = false;
@@ -606,25 +715,22 @@ namespace Bingo
             string varnamefstr = "";
             bool wrirtefstr = false;
 
-            //for (int i = 0; i < getchars.Length; i++)
+            //Console.WriteLine(getchars.Count);
+            //for (int i = 0; i < getchars.Count; i++)
             //{
             //    Console.WriteLine(getchars[i]);
             //}
 
 
-            if (getchars[0] == '"' && getchars[getchars.Length - 1] == '"') { }
-            else if (getchars[1] == '"' && getchars[getchars.Length - 1] == '"') { }
-            else { err.IfNotKavuchki(str[1], Position); return; }
-
-
-            if (getchars[0] == '$') { Fstr = true; goto recognize; }
+            if (getchars.Length == 0) { goto recognize; }
+            else if (getchars[0] == '$') { Fstr = true; goto recognize; }
             else if (getchars[0] == '@') { goto recognize; }
-            if (getchars[0] != '"') { err.DontWount(str[1], Position); return; }
+            else if (getchars[0] != '"') { err.DontWount(str[1], Position); return; }
 
         recognize:
             try
             {
-                for (int i = 0; i < getchars.Length; i++)
+                for (int i = 0; i < getchars.Length-1; i++)
                 {
                     if (getchars[i] == '}' && Fstr) { wrirtefstr = false; returntokens.Add(returnstring); returntokens.Add("VARIABLE(" + varnamefstr + ")"); returnstring = ""; continue; }
                     if (getchars[i] == '{' && Fstr) { wrirtefstr = true; continue; } // добавить ошибку если есть ф строка и неправильное расположение скобок
@@ -635,13 +741,13 @@ namespace Bingo
                     if (getchars[0] == '"' && i == 0) continue;
                     if (getchars[getchars.Length - 1] == '"' && i == getchars.Length - 1) continue;
 
-                    if (getchars[i] == '"' && getchars[i + 1] == '"' || getchars[i - 1] == '"' && getchars[i] == '"') { returnstring += getchars[i]; continue; }
-                    else if (getchars[i] == '\\' && getchars[i + 1] == '"' || getchars[i - 1] == '\\' && getchars[i + 1] == '"') { returnstring += getchars[i]; continue; }
+                    if (getchars[i] == '"' && getchars[i + 1] == '"') { returnstring += getchars[i]; continue; }
+                    else if (getchars[i] == '\\' && getchars[i + 1] == '"') { returnstring += getchars[i]; continue; }
 
-                    //else if (getchars[i] == '\\' && getchars[i + 1] == '\\' || getchars[i - 1] == '\\' && getchars[i] == '\\' || Autoecran) { returnstring += getchars[i]; continue; }
+                    else if (getchars[i] == '\\' && getchars[i + 1] == '\\') { returnstring += getchars[i]; continue; }
 
-                    //else if (getchars[i] == '\\' && getchars[i + 1] == 'n' || getchars[i - 1] == '\\' && getchars[i] == 'n') { returntokens.Add(returnstring); returntokens.Add("NEW_LINE"); returnstring = ""; continue; }
-                    //else if (getchars[i] == '\\' && getchars[i + 1] == 't' || getchars[i - 1] == '\\' && getchars[i] == 't') { returntokens.Add(returnstring); returntokens.Add("TAB"); returnstring = ""; continue; }
+                    else if (getchars[i] == '\\' && getchars[i + 1] == 'n' ) { returntokens.Add(returnstring); returntokens.Add("NEW_LINE"); returnstring = ""; continue; }
+                    else if (getchars[i] == '\\' && getchars[i + 1] == 't' /*|| getchars[i - 1] == '\\' && getchars[i] == 't'*/) { returntokens.Add(returnstring); returntokens.Add("TAB"); returnstring = ""; continue; }
 
                     else if (char.IsLetter(getchars[i])) returnstring += getchars[i];
 
@@ -665,7 +771,7 @@ namespace Bingo
 
             string Fullvalue = ""; // для данных в классе токена
             for (int i = 1; i < returntokens.ToArray().Length; i++) Fullvalue += returntokens[i];
-            token.Add(new Token(returntokens.ToArray()[0], Fullvalue, vlogenie, Position));
+            token.Add(new Token(returntokens.ToArray()[0].Trim('\t').Trim(), Fullvalue, "Потом добавить для всех слов фортат \"0x101\"", Position)); // модет быть в будующим баги которых не видно из за это го
 
             //foreach (var token in returntokens) Console.WriteLine(token);
 

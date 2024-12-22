@@ -40,17 +40,15 @@ namespace Bingo
             Console.Write($"= {RED}{UNDERLINE}{SplitVar[GetDataIntoSplit+1]}{NOUNDERLINE}{NORMAL}");
             Console.WriteLine();
 
-            int movearrow = 0;
-            int last = 0;
+            int need = 0; // нужная позиция для указания на данные переменной
             for (int i = 0; i < SplitVar.Length; i++)
             {
-                movearrow += SplitVar[i].Length;
-                last = SplitVar[i].Length;
+                if (SplitVar[i] != "=") need += SplitVar[i].Length;
+                else if (SplitVar[i] == "=") need += 2;
             }
-
-            Console.SetCursorPosition(last + movearrow /2, Console.CursorTop++);
+            Console.SetCursorPosition(need, Console.CursorTop++);
             Console.WriteLine("^");
-            Console.SetCursorPosition(last + movearrow / 2, Console.CursorTop++);
+            Console.SetCursorPosition(need, Console.CursorTop++);
             Console.Write("└─");
 
             if (SplitVar[0] == "char")
@@ -66,9 +64,9 @@ namespace Bingo
             string[] command = str.Split(new string[] { "(", ")" }, StringSplitOptions.None);
 
             Console.WriteLine($"{YELLOW}На {pos} строке обнаружена ошибка:");
-            Console.Write($"{RED}{UNDERLINE}{command[0]}{NOUNDERLINE}{NORMAL}(");
+            Console.Write($"{RED}{UNDERLINE}{command[0]}{NOUNDERLINE}{NORMAL}");
             foreach(var i in command.Skip(1)) Console.Write(i);
-            Console.WriteLine(")");
+            Console.WriteLine();
 
 
             Console.SetCursorPosition(command[0].Length / 2, Console.CursorTop++);
@@ -179,12 +177,13 @@ namespace Bingo
             Console.WriteLine($"{YELLOW}На {pos} строке обнаружена ошибка:{NORMAL}");
             Console.WriteLine($"{RED}{UNDERLINE}{str.Split(' ')[0]}{NOUNDERLINE}{NORMAL}");
 
+            Console.WriteLine("Нарушен баланс фигурных скобок");
 
-            Console.CursorLeft = str.Split(' ')[0].Length / 2;
-            Console.WriteLine("^");
-            Console.CursorLeft = str.Split(' ')[0].Length / 2;
-            Console.Write("└─");
-            Console.WriteLine("─ Отсутствуют фигурные скобки лиюо стоит впритык.");
+            //Console.CursorLeft = str.Split(' ')[0].Length / 2;
+            //Console.WriteLine("^");
+            //Console.CursorLeft = str.Split(' ')[0].Length / 2;
+            //Console.Write("└─");
+            //Console.WriteLine("─ Отсутствуют фигурные скобки либо стоит впритык.");
 
             Console.WriteLine($"\n{RED}Error: IfNotFigSkobk{NORMAL}\n");
             return;
@@ -225,14 +224,14 @@ namespace Bingo
         public void WrongParametrs(string str, int pos)//!!!!
         {
             Console.WriteLine($"{YELLOW}На {pos} строке обнаружена ошибка:{NORMAL}");
-            Console.WriteLine($"{RED}{UNDERLINE}{str.Split(' ')[0]}{NOUNDERLINE}{NORMAL}");
+            Console.WriteLine($"{RED}{UNDERLINE}{str}{NOUNDERLINE}{NORMAL}");
 
 
-            Console.CursorLeft = str.Split(' ')[0].Length / 2;
+            Console.CursorLeft = str.Length / 2;
             Console.WriteLine("^");
-            Console.CursorLeft = str.Split(' ')[0].Length / 2;
+            Console.CursorLeft = str.Length / 2;
             Console.Write("└─");
-            Console.WriteLine($"─ Не распознанно условие ключевого слова.");
+            Console.WriteLine($"─ Не распознанно условие лексического построения ключевого слова.");
 
             Console.WriteLine($"\n{RED}Error: WrongParametrs{NORMAL}\n");
             return;
